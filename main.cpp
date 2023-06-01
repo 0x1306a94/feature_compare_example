@@ -10,7 +10,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <malloc/malloc.h>
 #include <memory>
 #include <stdlib.h>
 
@@ -70,7 +69,7 @@ float compare(const float *target, const float *source) {
     for (size_t idx = 0; idx < FEATURE_LENGTH; idx++) {
         sum += target[idx] * source[idx];
     }
-//    sum = std::max(sum, 0.0f);
+    //    sum = std::max(sum, 0.0f);
     return sum;
 }
 
@@ -81,7 +80,7 @@ float compare_sse(const float *target, const float *source) {
         __m128 C = _mm_dp_ps(_mm_load_ps(target + i), _mm_load_ps(source + i), 0xf1);
         sum += C[0];
     }
-//    sum = std::max(sum, 0.0f);
+    //    sum = std::max(sum, 0.0f);
     return sum;
 }
 #endif
@@ -93,7 +92,7 @@ float compare_avx(const float *target, const float *source) {
         __m256 tmp = _mm256_dp_ps(_mm256_load_ps(target + i), _mm256_load_ps(source + i), 0xf1);
         sum += tmp[0] + tmp[4];
     }
-//    sum = std::max(sum, 0.0f);
+    //    sum = std::max(sum, 0.0f);
     return sum;
 }
 #endif
@@ -107,7 +106,7 @@ float compare_simd8(const float *target, const float *source) {
         result += *l * *r;
     }
     float sum = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] + result[6] + result[7];
-//    sum = std::max(sum, 0.0f);
+    //    sum = std::max(sum, 0.0f);
     return sum;
 }
 
@@ -119,7 +118,7 @@ float compare_simd16(const float *target, const float *source) {
         result += *l * *r;
     }
     float sum = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] + result[6] + result[7] + result[8] + result[9] + result[10] + result[11] + result[12] + result[13] + result[14] + result[15];
-//    sum = std::max(sum, 0.0f);
+    //    sum = std::max(sum, 0.0f);
     return sum;
 }
 #endif
@@ -134,7 +133,7 @@ void test(void) {
     //    std::shared_ptr<float[]> all_features(buffer, std::default_delete<float[]>());
 
     std::shared_ptr<float[]> all_features(new float[FEATURE_COUNT * FEATURE_LENGTH], std::default_delete<float[]>());
-    std::cout << "10w memory size: " << malloc_size(all_features.get()) << std::endl;
+    std::cout << "10w memory size: " << sizeof(float) * FEATURE_COUNT * FEATURE_LENGTH << std::endl;
     std::shared_ptr<float[]> target_feature(new float[FEATURE_LENGTH], std::default_delete<float[]>());
 #endif
     //    getchar();
