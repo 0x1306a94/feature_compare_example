@@ -19,7 +19,7 @@ if(APPLE)
         set(CMAKE_CXX_FLAGS "-mavx ${CMAKE_CXX_FLAGS}")
     endif()
 elseif(UNIX)
-
+    set(CMAKE_CXX_FLAGS "-mavx ${CMAKE_CXX_FLAGS}")
 endif()
 
 
