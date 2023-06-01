@@ -144,7 +144,7 @@ void test(void) {
         all_features[idx] = gen_rand_float();
     }
 
-    for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
+    for (size_t idx = 0; idx < FEATURE_LENGTH; idx++) {
         target_feature[idx] = gen_rand_float();
     }
     auto end = std::chrono::steady_clock::now();
