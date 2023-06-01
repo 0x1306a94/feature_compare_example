@@ -77,7 +77,7 @@ float compare(const float *target, const float *source) {
 float compare_sse(const float *target, const float *source) {
     float sum = 0;
     for (uint32_t i = 0; i < FEATURE_LENGTH; i += 4) {
-        __m128 C = _mm_dp_ps(_mm_load_ps(target + i), _mm_load_ps(source + i), 0xf1);
+        __m128 C = _mm_dp_ps(_mm_loadu_ps(target + i), _mm_loadu_ps(source + i), 0xf1);
         sum += C[0];
     }
     //    sum = std::max(sum, 0.0f);
@@ -89,7 +89,7 @@ float compare_sse(const float *target, const float *source) {
 float compare_avx(const float *target, const float *source) {
     float sum = 0;
     for (uint32_t i = 0; i < FEATURE_LENGTH; i += 8) {
-        __m256 tmp = _mm256_dp_ps(_mm256_load_ps(target + i), _mm256_load_ps(source + i), 0xf1);
+        __m256 tmp = _mm256_dp_ps(_mm256_loadu_ps(target + i), _mm256_loadu_ps(source + i), 0xf1);
         sum += tmp[0] + tmp[4];
     }
     //    sum = std::max(sum, 0.0f);
