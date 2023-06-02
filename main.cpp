@@ -13,48 +13,15 @@
 #include <memory>
 #include <stdlib.h>
 
-#define PTR_ADDR(p) ((unsigned long)p)
+#include "simd_feature.hpp"
 
-#if defined(__APPLE__)
-#include <TargetConditionals.h>
+#if SIMD_SUPPORT_SSE || SIMD_SUPPORT_AVX
+#include <immintrin.h>
+#endif
 
-#if TARGET_OS_OSX
-#if TARGET_CPU_ARM64
+#if SIMD_SUPPORT_APPLE_ARM64_SIMD8 || SIMD_SUPPORT_APPLE_ARM64_SIMD16
 #include <simd/simd.h>
-#elif TARGET_CPU_X86_64
-#include <immintrin.h>
-
-#if defined(__AVX__)
-#define SUUPORT_AVX 1
 #endif
-
-#if defined(__SSE4_1__)
-#define SUUPORT_SSE4_1 1
-#endif
-#endif
-
-#endif
-
-#elif defined(__linux__)
-
-#include <immintrin.h>
-
-#if defined(__AVX__)
-#define SUUPORT_AVX 1
-#endif
-
-#if defined(__SSE4_1__)
-#define SUUPORT_SSE4_1 1
-#endif
-
-#endif
-//#if defined(__AVX__)
-//#define ALIGNMENT 32
-//#elif defined(__SSE4_1__)
-//#define ALIGNMENT 16
-//#else
-//#define ALIGNMENT 1
-//#endif
 
 constexpr size_t FEATURE_LENGTH = 1024;
 constexpr size_t FEATURE_COUNT = 100000;
@@ -73,7 +40,7 @@ float compare(const float *target, const float *source) {
     return sum;
 }
 
-#ifdef SUUPORT_SSE4_1
+#if SIMD_SUPPORT_SSE
 float compare_sse(const float *target, const float *source) {
     float sum = 0;
     for (uint32_t i = 0; i < FEATURE_LENGTH; i += 4) {
@@ -85,7 +52,7 @@ float compare_sse(const float *target, const float *source) {
 }
 #endif
 
-#ifdef SUUPORT_AVX
+#if SIMD_SUPPORT_AVX
 float compare_avx(const float *target, const float *source) {
     float sum = 0;
     for (uint32_t i = 0; i < FEATURE_LENGTH; i += 8) {
@@ -97,7 +64,7 @@ float compare_avx(const float *target, const float *source) {
 }
 #endif
 
-#if defined(TARGET_CPU_ARM64) && TARGET_CPU_ARM64
+#if SIMD_SUPPORT_APPLE_ARM64_SIMD8
 float compare_simd8(const float *target, const float *source) {
     simd_float8 result = simd_make_float8(0);
     for (uint32_t i = 0; i < FEATURE_LENGTH; i += 8) {
@@ -109,7 +76,9 @@ float compare_simd8(const float *target, const float *source) {
     //    sum = std::max(sum, 0.0f);
     return sum;
 }
+#endif
 
+#if SIMD_SUPPORT_APPLE_ARM64_SIMD16
 float compare_simd16(const float *target, const float *source) {
     simd_float16 result = simd_make_float16(0);
     for (uint32_t i = 0; i < FEATURE_LENGTH; i += 16) {
@@ -166,7 +135,7 @@ void test(void) {
               << "ms"
               << " sim " << sim << std::endl;
 
-#if defined(TARGET_CPU_ARM64) && TARGET_CPU_ARM64
+#if SIMD_SUPPORT_APPLE_ARM64_SIMD8
     start = std::chrono::steady_clock::now();
     sim = 0;
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
@@ -179,7 +148,9 @@ void test(void) {
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
               << "ms"
               << " sim " << sim << std::endl;
+#endif
 
+#if SIMD_SUPPORT_APPLE_ARM64_SIMD16
     start = std::chrono::steady_clock::now();
     sim = 0;
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
@@ -194,7 +165,7 @@ void test(void) {
               << " sim " << sim << std::endl;
 #endif
 
-#ifdef SUUPORT_SSE4_1
+#if SIMD_SUPPORT_SSE
     start = std::chrono::steady_clock::now();
     sim = 0;
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
@@ -209,7 +180,7 @@ void test(void) {
               << " sim " << sim << std::endl;
 #endif
 
-#ifdef SUUPORT_AVX
+#if SIMD_SUPPORT_AVX
     start = std::chrono::steady_clock::now();
     sim = 0;
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {

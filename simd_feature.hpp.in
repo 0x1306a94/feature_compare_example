@@ -1,0 +1,11 @@
+#ifndef __simd_feature_hpp__
+#define __simd_feature_hpp__
+
+#cmakedefine01 SIMD_SUPPORT_SSE
+
+#cmakedefine01 SIMD_SUPPORT_AVX
+
+#cmakedefine01 SIMD_SUPPORT_APPLE_ARM64_SIMD8
+
+#cmakedefine01 SIMD_SUPPORT_APPLE_ARM64_SIMD16
+#endif
