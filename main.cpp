@@ -19,7 +19,7 @@
 #include <immintrin.h>
 #endif
 
-#if SIMD_SUPPORT_APPLE_ARM64_SIMD8 || SIMD_SUPPORT_APPLE_ARM64_SIMD16
+#if SIMD_SUPPORT_APPLE_SIMD8 || SIMD_SUPPORT_APPLE_SIMD16
 #include <simd/simd.h>
 #endif
 
@@ -64,7 +64,7 @@ float compare_avx(const float *target, const float *source) {
 }
 #endif
 
-#if SIMD_SUPPORT_APPLE_ARM64_SIMD8
+#if SIMD_SUPPORT_APPLE_SIMD8
 float compare_simd8(const float *target, const float *source) {
     simd_float8 result = simd_make_float8(0);
     for (uint32_t i = 0; i < FEATURE_LENGTH; i += 8) {
@@ -78,7 +78,7 @@ float compare_simd8(const float *target, const float *source) {
 }
 #endif
 
-#if SIMD_SUPPORT_APPLE_ARM64_SIMD16
+#if SIMD_SUPPORT_APPLE_SIMD16
 float compare_simd16(const float *target, const float *source) {
     simd_float16 result = simd_make_float16(0);
     for (uint32_t i = 0; i < FEATURE_LENGTH; i += 16) {
@@ -135,7 +135,7 @@ void test(void) {
               << "ms"
               << " sim " << sim << std::endl;
 
-#if SIMD_SUPPORT_APPLE_ARM64_SIMD8
+#if SIMD_SUPPORT_APPLE_SIMD8
     start = std::chrono::steady_clock::now();
     sim = 0;
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
@@ -144,13 +144,13 @@ void test(void) {
         sim = v;
     }
     end = std::chrono::steady_clock::now();
-    std::cout << "SIMD(M1 float8) 1:10w 内积计算耗时: "
+    std::cout << "SIMD(simd float8) 1:10w 内积计算耗时: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
               << "ms"
               << " sim " << sim << std::endl;
 #endif
 
-#if SIMD_SUPPORT_APPLE_ARM64_SIMD16
+#if SIMD_SUPPORT_APPLE_SIMD16
     start = std::chrono::steady_clock::now();
     sim = 0;
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
@@ -159,7 +159,7 @@ void test(void) {
         sim = v;
     }
     end = std::chrono::steady_clock::now();
-    std::cout << "SIMD(M1 float16) 1:10w 内积计算耗时: "
+    std::cout << "SIMD(simd float16) 1:10w 内积计算耗时: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
               << "ms"
               << " sim " << sim << std::endl;
