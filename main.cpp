@@ -9,6 +9,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <iostream>
 #include <memory>
@@ -121,20 +122,15 @@ void test(void) {
     std::unique_ptr<float[]> all_features = std::make_unique<float[]>(FEATURE_COUNT * FEATURE_LENGTH);
     std::unique_ptr<float[]> target_feature = std::make_unique<float[]>(FEATURE_LENGTH);
 #else
-    //    auto buffer = new float[FEATURE_COUNT * FEATURE_LENGTH];
-    //    float *buffer = (float *)malloc(sizeof(float) * FEATURE_COUNT * FEATURE_LENGTH);
-    //    std::shared_ptr<float[]> all_features(buffer, std::default_delete<float[]>());
 
     std::shared_ptr<float[]> all_features(new float[FEATURE_COUNT * FEATURE_LENGTH], std::default_delete<float[]>());
     std::cout << "10w memory size: " << sizeof(float) * FEATURE_COUNT * FEATURE_LENGTH << std::endl;
     std::shared_ptr<float[]> target_feature(new float[FEATURE_LENGTH], std::default_delete<float[]>());
 #endif
-    //    getchar();
-    //    return;
-    auto len = FEATURE_COUNT * FEATURE_LENGTH;
-    auto start = std::chrono::steady_clock::now();
-    for (size_t idx = 0; idx < len; idx++) {
-        all_features[idx] = gen_rand_float();
+    auto start = std::chrono::high_resolution_clock::now();
+    for (size_t idx = 0; idx < FEATURE_COUNT * FEATURE_LENGTH; idx++) {
+        float randomValue = gen_rand_float();
+        all_features[idx] = randomValue;
     }
 
     //    for (size_t idx = 0; idx < FEATURE_LENGTH; idx++) {
@@ -142,7 +138,7 @@ void test(void) {
     //    }
     std::memcpy(target_feature.get(), all_features.get(), FEATURE_LENGTH * sizeof(float));
 
-    auto end = std::chrono::steady_clock::now();
+    auto end = std::chrono::high_resolution_clock::now();
     std::cout << "初始化10w条向量耗时: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
               << "ms\n";
@@ -150,13 +146,10 @@ void test(void) {
 
     std::priority_queue<SimilarityResult> topKList;
 
-    start = std::chrono::steady_clock::now();
+    start = std::chrono::high_resolution_clock::now();
 
-    float sim = 0;
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
         float v = compare(target_feature.get(), ptr + (idx * FEATURE_LENGTH));
-        //        std::max(sim, v);
-        sim = v;
         if (topKList.size() < TOPK) {
             topKList.emplace(idx, v);
         } else if (topKList.top().similarity < v) {
@@ -164,21 +157,17 @@ void test(void) {
             topKList.emplace(idx, v);
         }
     }
-    end = std::chrono::steady_clock::now();
+    end = std::chrono::high_resolution_clock::now();
     std::cout << "常规 1:10w 内积计算耗时: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << "ms"
-              << " sim " << sim << std::endl;
+              << "ms" << std::endl;
     printTopK(topKList);
 
 #if SIMD_SUPPORT_APPLE_SIMD8
     std::priority_queue<SimilarityResult>().swap(topKList);
-    start = std::chrono::steady_clock::now();
-    sim = 0;
+    start = std::chrono::high_resolution_clock::now();
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
         float v = compare_simd8(target_feature.get(), ptr + (idx * FEATURE_LENGTH));
-        //        std::max(sim, v);
-        sim = v;
         if (topKList.size() < TOPK) {
             topKList.emplace(idx, v);
         } else if (topKList.top().similarity < v) {
@@ -186,22 +175,18 @@ void test(void) {
             topKList.emplace(idx, v);
         }
     }
-    end = std::chrono::steady_clock::now();
+    end = std::chrono::high_resolution_clock::now();
     std::cout << "SIMD(simd float8) 1:10w 内积计算耗时: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << "ms"
-              << " sim " << sim << std::endl;
+              << "ms" << std::endl;
     printTopK(topKList);
 #endif
 
 #if SIMD_SUPPORT_APPLE_SIMD16
     std::priority_queue<SimilarityResult>().swap(topKList);
-    start = std::chrono::steady_clock::now();
-    sim = 0;
+    start = std::chrono::high_resolution_clock::now();
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
         float v = compare_simd16(target_feature.get(), ptr + (idx * FEATURE_LENGTH));
-        //        std::max(sim, v);
-        sim = v;
         if (topKList.size() < TOPK) {
             topKList.emplace(idx, v);
         } else if (topKList.top().similarity < v) {
@@ -209,22 +194,18 @@ void test(void) {
             topKList.emplace(idx, v);
         }
     }
-    end = std::chrono::steady_clock::now();
+    end = std::chrono::high_resolution_clock::now();
     std::cout << "SIMD(simd float16) 1:10w 内积计算耗时: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << "ms"
-              << " sim " << sim << std::endl;
+              << "ms" << std::endl;
     printTopK(topKList);
 #endif
 
 #if SIMD_SUPPORT_SSE
     std::priority_queue<SimilarityResult>().swap(topKList);
-    start = std::chrono::steady_clock::now();
-    sim = 0;
+    start = std::chrono::high_resolution_clock::now();
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
         float v = compare_sse(target_feature.get(), ptr + (idx * FEATURE_LENGTH));
-        //        std::max(sim, v);
-        sim = v;
         if (topKList.size() < TOPK) {
             topKList.emplace(idx, v);
         } else if (topKList.top().similarity < v) {
@@ -232,22 +213,18 @@ void test(void) {
             topKList.emplace(idx, v);
         }
     }
-    end = std::chrono::steady_clock::now();
+    end = std::chrono::high_resolution_clock::now();
     std::cout << "SIMD(SSE4) 1:10w 内积计算耗时: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << "ms"
-              << " sim " << sim << std::endl;
+              << "ms" << std::endl;
     printTopK(topKList);
 #endif
 
 #if SIMD_SUPPORT_AVX
     std::priority_queue<SimilarityResult>().swap(topKList);
-    start = std::chrono::steady_clock::now();
-    sim = 0;
+    start = std::chrono::high_resolution_clock::now();
     for (size_t idx = 0; idx < FEATURE_COUNT; idx++) {
         float v = compare_avx(target_feature.get(), ptr + (idx * FEATURE_LENGTH));
-        //        std::max(sim, v);
-        sim = v;
         if (topKList.size() < TOPK) {
             topKList.emplace(idx, v);
         } else if (topKList.top().similarity < v) {
@@ -255,11 +232,10 @@ void test(void) {
             topKList.emplace(idx, v);
         }
     }
-    end = std::chrono::steady_clock::now();
+    end = std::chrono::high_resolution_clock::now();
     std::cout << "SIMD(AVX) 1:10w 内积计算耗时: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << "ms"
-              << " sim " << sim << std::endl;
+              << "ms" << std::endl;
     printTopK(topKList);
 #endif
 }
